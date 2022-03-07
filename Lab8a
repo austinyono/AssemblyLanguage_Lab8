@@ -1,0 +1,145 @@
+.data
+#Program Description: Loops and decisions"
+#Author: Austin Yono"
+#Creation Date:	10/10/2019"
+
+out1: .asciiz "\n Enter number of items to buy."
+out2: .asciiz "\n Enter price for each item."
+out3: .asciiz "\n Enter number of coupons. Should be same as number of items."
+out4: .asciiz "\n Enter discount for each item." 
+out5: .asciiz "\n Total cost: "
+out6: .asciiz "\n Coupon not acceptable.\n"
+
+error1: .asciiz "\n Number must be greater than 0. Enter new number."
+error2: .asciiz "\n Number must be 20 or less. Enter a new number."
+error3: .asciiz "\n Number must match number of items. Enter a new number."
+
+priceArray: .word 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+couponArray: .word 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+.text
+heading:
+
+li $v0,4
+la $a0,out1 #output enter number of items
+syscall
+
+main:
+
+li $t8,20 #load 20 into t8
+li $t9,10 #load 10 into t9
+
+element:
+li, $v0 5
+syscall
+add $t0,$v0,$0
+
+ble $t0,$0,err1 #if user input less than or equal to 0 go to error
+bgt $t0,$t8,err2 #if user input greater than 20 go to error 
+
+li, $v0,4
+la $a0,out2 #print string message
+syscall
+
+add $a1,$t0,$0
+la $s0,priceArray #load array 
+
+jal prices #jump to prices loop
+
+li $v0, 4
+la $a0,out3 #print output3 string
+syscall
+
+element2:
+li $v0, 5 #get user input
+syscall 
+
+add $t1,$v0,$0
+
+bne $t0,$t1,err3 #if not equal to 0 go to error
+
+li $v0,4
+la $a0,out4 #output string message
+syscall
+
+la $s1,couponArray #loads couponarray into s1
+la $s0,priceArray #loads price array into s0
+add $a2,$t1,$0
+
+jal coupons #jump to coupon loop
+
+j print #jump to print loop
+
+prices:
+add $t2,$a1,$0 #store a1 into t2
+loop:
+beq $t2,$0,next #when loop equals 0 jump to next 
+li $v0,5 #get user input
+syscall
+sw $v0,0($s0) #store into v0
+addi $s0,$s0,4 #increment by 4
+addi $t2,$t2,-1 #allows to go through loop
+add $s4,$s4,$v0
+j loop #jump to j loop
+next:
+jr $ra #jump back to couner
+
+coupons:
+add $t3,$a2,$0 #store into t3
+looping:
+beq $t3,$0,cont #when t3 equal 0 jump to cont
+li $v0,5
+syscall
+add $t5,$v0,$0 #store into t5
+lw $t6,0($s0)
+bgt $t5,$t9,zero #greater than branch
+bge $t5,$t6,zero #greater than or equal to branch
+sw $t5,0($s1) #store into t5
+addi $s1,$s1,4 #increments of 4
+addi $s0,$s0,4 #increments of 4
+addi $t3,$t3,-1 #goes through loop until equals 0
+add $s3,$s3,$t5
+j looping #jumps back through loop
+zero:
+sw $0,0($s1) 
+addi $s1,$s1,4 #increments of 4
+addi $s0,$s0,4 
+addi $t3,$t3,-1
+li $v0,4
+la $a0,out6 #print string message
+syscall
+j looping#jumps to looping loop
+cont:
+jr $ra #jumps back to last counter
+
+print:
+li $v0,4
+la $a0,out5 #print string message
+syscall
+
+li $v0,1
+sub $a0,$s4,$s3 #sub to get total
+syscall
+
+
+done:
+li $v0,10 #exit program
+syscall
+
+err1:
+li $v0,4
+la $a0,error1 #print string message
+syscall
+j element
+
+err2:
+li $v0,4
+la $a0,error2 #print string message
+syscall
+j element #jumps back to element
+
+err3:
+li $v0,4
+la $a0,error3 #print error string message
+syscall
+j element2 #jumps back to element loop
